@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <meta http-equiv="X-UV-Compatible" content="ie=edge">
+        <title>Typing speed</title>
+        <link rel="stylesheet" href="bootstrap.min.css">
+        
+    </head>
+    <body class="bg-dark text-white">
+        <header class="bg-secondary text-center p-0 mb-1">
+            <h1>WordBeater</h1>
+        </header>
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-6 mx-auto">
+                    <p class="lead">Type the given word within
+                        <span class="text-success" id="seconds">5</span> Seconds:
+                    </p>
+                    <h2 class="display-2 mb-5" id="current-word"></h2>
+                    <input type="text" class="form-control form-control-lg" placeholder="Start Typing..." id="word-input" autofocus>
+                    <h4 class="mt-3" id="message"></h4>
+
+                    <div class="row mt-5">
+                        <div class="col-md-6">
+                            <h3>Time Left:
+                                <span id="time">0</span>
+                            </h3>
+                        </div>
+                        <div class="col-md-6">
+                            <h3>Score:
+                                <span id="score">0</span>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="row mt-5">
+                        <div class="col-md-12">
+                            <div class="card card-bodyh bg-secondary text-white">
+                                <h5>Instructions</h5>
+                                <p>Type each word in the given amount of seconds to score. To play again, just type the current word. Your score will reset.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            window.onload=init;
+            //window.addEventListener('onload', init);
+            //Globals
+            
+            let score=0;
+            let isPlaying;
+
+            //Dom Elements
+            const wordInput=null;
+            const currentWord=null;
+            const scoreDisplay=null;
+            const timeDisplay=null;
+            const message=null;
+            const seconds=null;
+            const words=[
+                'hat',
+                'river',
+                'lucky',
+                'statue',
+                'generate',
+                'stubborn'
+            ];
+            const levels={
+                easy:5,
+                medium:3,
+                hard:2
+            };
+
+            const currentLevel=levels.easy;
+            let time=currentLevel;
+
+            //initialize game
+            function init() {
+                const wordInput=document.querySelector("#word-input");                
+                const scoreDisplay=document.querySelector("#score");
+                
+                
+                document.querySelector("#seconds").innerHTML=currentLevel;
+                
+                //load word from array
+                showword(words);
+                wordInput.addEventListener('input',startMatch);
+                setInterval(countdown, 1000);
+                setInterval(checkStatus, 50);
+            }
+            function startMatch() {
+                if(matchWords()){
+                    isPlaying=true;
+                    time=currentLevel+1;
+                    showword(words);
+                    document.querySelector("#word-input").value='';
+                    score++;                    
+                }
+                if(score===-1){
+                    document.querySelector("#score").innerHTML=0;
+                }else{
+                    document.querySelector("#score").innerHTML=score;
+                }                
+            }
+
+            //Match the current word
+            function matchWords() {  
+                if(document.querySelector("#word-input").value===document.querySelector("#current-word").innerHTML){
+                    const message=document.querySelector("#message");
+                    message.innerHTML="Correct !!!";
+                    return true;
+                }else{
+                    document.querySelector("#message").innerHTML='';
+                    return false;
+                }
+
+            }
+            function showword(words) {
+                //Generate random index
+                const randIndex = Math.floor(Math.random() * words.length);
+                //output random word
+                const currentWord=document.querySelector("#current-word");
+                currentWord.innerHTML = words[randIndex];
+            }
+            function checkStatus(){
+                if(!isPlaying && time===0){
+                    document.querySelector("#message").innerHTML="Game Over !!!";
+                    score=-1;                  
+                }
+            }
+            function countdown() {
+                //check not run out
+                if(time>0){
+                    time--;
+                }else if(time===0){
+                    isPlaying=false;
+                }
+                const timeDisplay=document.querySelector("#time");
+                timeDisplay.innerHTML=time;
+            }
+
+        </script>
+    </body>
+
+</html>
