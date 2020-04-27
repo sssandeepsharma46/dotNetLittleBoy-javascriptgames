@@ -1,0 +1,589 @@
+<html>
+    <head>
+        <title>Sanke and Ladder</title>
+    </head>
+    <body>
+        <script type="text/javascript">
+            let snakeImage1=new Image();
+            let snakeImage2=new Image();
+            let snakeImage3=new Image();            
+            let ladderImage1=new Image();
+            let ladderImage2=new Image();
+            let ladderImage3=new Image();
+            let ladderImage4=new Image();            
+            snakeImage1.src="snake6.png";
+            snakeImage2.src="snake5.png";
+            snakeImage3.src="snake4.png";
+            
+            ladderImage1.src="ladder1.png";
+            ladderImage2.src="ladder1.png";
+            ladderImage3.src="ladder1.png";
+            ladderImage4.src="ladder1.png";
+            
+            //Create canvas one and add to html body
+            var canvas=document.createElement('canvas');
+            canvas.id='canvas';
+            canvas.width=500;
+            canvas.height=500;
+            canvas.style.background='rgb(0,0,0)';
+            canvas.style.float="left";
+            document.body.appendChild(canvas);
+            var context=canvas.getContext('2d');
+            
+            //Create canvas 2 and add to html body
+            var canvas1=document.createElement("canvas");
+            canvas1.id = "canvas1";
+            canvas1.width=200;
+            canvas1.height=300;
+            canvas1.style.background="#000";
+            canvas1.style.float='left';
+            document.body.appendChild(canvas1);
+            var context1=canvas1.getContext('2d');
+            
+            let randomDice=[];
+            let tiles=[];
+            
+            let resolution=50;
+            let cols=canvas.width/resolution;
+            let rows=canvas.height/resolution;
+            
+            let x=0;
+            let y=(rows-1)*resolution;
+            let dir=1;
+            let myInterval;
+            
+            //let start with player 1 turn
+            let player1turn=true;
+            let player2turn=false;
+            
+            let dice=new drawDice();
+            let currentDiceNumber=Math.floor(Math.random()*6)+1
+            
+            //Player Details
+            var player1=new Player("#fff",1);
+            var player2=new Player("#ff0000",2);
+            let isPlayer1Active=false;
+            let isPlayer2Active=false;
+            
+            
+            for(let i=0;i<cols*rows;i++){                
+                let tile=new Tile(x,y,resolution,i,i+1);
+                tiles.push(tile);
+                x=x+(resolution*dir);
+                if(x>=canvas.width || x<=-resolution){
+                    dir*=-1;
+                    x+=resolution*dir;
+                    y-=resolution;
+                }
+            }
+            
+            
+            snakeImage1.onload=function(){
+                    context.beginPath();
+                    context.drawImage(snakeImage1,1*resolution,canvas.height/2,100,300);
+                    context.closePath();
+                }
+                snakeImage2.onload=function(){
+                    context.beginPath();
+                    context.drawImage(snakeImage2,2*resolution,10,200,300);
+                    context.closePath();
+                }
+                snakeImage3.onload=function(){
+                    context.beginPath();
+                    context.drawImage(snakeImage3,6*resolution,3*resolution,100,300);
+                    context.closePath();
+                }
+                ladderImage1.onload=function(){
+                    context.save();
+                    context.beginPath();
+                    context.rotate(Math.PI/11);
+                    context.drawImage(ladderImage1,3*resolution+20,4*resolution+10,30,200);                              
+                    context.closePath();
+                    context.restore();
+                }
+
+                ladderImage2.onload=function(){
+                    context.save();
+                    context.beginPath();
+                    context.rotate(-Math.PI/11);
+                    context.drawImage(ladderImage2,3*resolution-10,2*resolution,30,200);                
+                    context.closePath();
+                    context.restore();
+                }
+                ladderImage3.onload=function(){
+                    context.beginPath();                
+                    context.drawImage(ladderImage3,7*resolution+10,1*resolution-15,30,300);                
+                    context.closePath();
+                }
+                ladderImage4.onload=function(){
+                    context.beginPath();                
+                    context.drawImage(ladderImage4,8*resolution+10,7*resolution-20,30,100);                
+                    context.closePath();
+                }
+                
+            document.body.addEventListener('click',playGame);
+            drawGamePlot();
+            player1.show();
+            player2.show();
+            
+            function drawDetailsOnCanvas1(){
+                //put player 1 in right side of board                
+                context1.beginPath();
+                context1.fillStyle=player1.color;
+                context1.font="20px Arial";
+                context1.fillText("Player 1",50,50);
+                context1.closePath();
+                context1.beginPath();
+                context1.fillStyle=player1.color;
+                context1.arc(150,45,resolution/2-10,0,Math.PI*2);
+                context1.fill();
+                context1.closePath();
+
+                context1.beginPath();
+                context1.fillStyle=player2.color;
+                context1.font="20px Arial";
+                context1.fillText("Player 2",50,100);
+                context1.closePath();
+                context1.beginPath();
+                context1.fillStyle=player2.color;
+                context1.arc(150,95,resolution/2-10,0,Math.PI*2);
+                context1.fill();
+                context1.closePath();
+            }
+            
+            
+            function playGame(){
+                    if(player1turn){
+                    context1.clearRect(0,0,canvas1.width,canvas1.height);
+                    drawDetailsOnCanvas1();
+                    
+                    drawGamePlot();
+                    context1.beginPath();
+                    context1.font="25px Arial"
+                    context1.fillStyle=player2.color;
+                    context1.fillText("Player 2 turn",10,150);
+                    context1.closePath();
+                    player1.roll();
+                    if(player1.isActive){
+                        if(player1.spot>=tiles.length-1){
+                            player1.spot=tiles.length-1;
+
+                            context1.beginPath();
+                            context1.font="25px Arial"
+                            context1.fillStyle=player1.color;
+                            context1.fillText("Player 1 Win",10,170);
+                            context1.closePath();
+
+                            console.log("Game Over ! Player 1 win");
+                            document.body.removeEventListener('click',playGame);
+                            //clearInterval(myInterval);
+                        }                        
+                    }
+                    player1.show();
+                    player2.show();
+                    player1turn=false;
+                    player2turn=true;
+
+                }else if(player2turn){
+                    context1.clearRect(0,0,canvas1.width,canvas1.height);
+                    drawDetailsOnCanvas1();
+                    
+                    drawGamePlot();
+                    context1.beginPath();
+                    context1.font="25px Arial"
+                    context1.fillStyle=player1.color;
+                    context1.fillText("Player 1 turn",10,150);
+                    context1.closePath();
+                    player2.roll();
+                    
+                    if(player2.isActive){
+                        if(player2.spot>=tiles.length-1){
+                            player2.spot=tiles.length-1;
+                            context1.beginPath();
+                            context1.font="25px Arial"
+                            context1.fillStyle=player2.color;
+                            context1.fillText("Player 2 Win",10,170);
+                            context1.closePath();
+                            console.log("Game Over ! Player 2 win");
+                            document.body.removeEventListener('click',playGame)
+                            //clearInterval(myInterval);
+                        }                       
+                    }
+                    player2.show();
+                    player1.show();
+
+                    player1turn=true;
+                    player2turn=false;
+                }
+            }
+            
+            
+            function drawGamePlot(){
+                //player.show();
+                tiles.forEach((tile)=>tile.show());
+                tiles.forEach((tile)=>tile.showNumbers());
+                tiles.forEach((tile)=>tile.showLocation());
+                tiles.forEach((tile)=>function(tile){console.log(tile.x+' '+tile.y)});
+                //snakeImage.drawSnake();
+
+                //player1.roll();
+                if(player1.spot>=tiles.length-1){
+                    player1.spot=tiles.length-1;
+                    console.log("Game Over !");
+                    //clearInterval(myInterval);
+                }
+                    context.beginPath();
+                    context.drawImage(snakeImage1,1*resolution,canvas.height/2,100,300);
+                    context.closePath();
+                
+                    context.beginPath();
+                    context.drawImage(snakeImage2,2*resolution,10,200,300);
+                    context.closePath();
+                
+                    context.beginPath();
+                    context.drawImage(snakeImage3,6*resolution,3*resolution,100,300);
+                    context.closePath();
+                
+                    context.save();
+                    context.beginPath();
+                    context.rotate(Math.PI/11);
+                    context.drawImage(ladderImage1,3*resolution+20,4*resolution+10,30,200);                              
+                    context.closePath();
+                    context.restore();
+                
+                    context.save();
+                    context.beginPath();
+                    context.rotate(-Math.PI/11);
+                    context.drawImage(ladderImage2,3*resolution-10,2*resolution,30,200);                
+                    context.closePath();
+                    context.restore();
+                
+                    context.beginPath();                
+                    context.drawImage(ladderImage3,7*resolution+10,1*resolution-15,30,300);                
+                    context.closePath();
+                
+                    context.beginPath();                
+                    context.drawImage(ladderImage4,8*resolution+10,7*resolution-20,30,100);                
+                    context.closePath();
+
+//                snakeImage1.onload=function(){
+//                    context.beginPath();
+//                    context.drawImage(snakeImage1,1*resolution,canvas.height/2,100,300);
+//                    context.closePath();
+//                }
+//                snakeImage2.onload=function(){
+//                    context.beginPath();
+//                    context.drawImage(snakeImage2,2*resolution,10,200,300);
+//                    context.closePath();
+//                }
+//                snakeImage3.onload=function(){
+//                    context.beginPath();
+//                    context.drawImage(snakeImage3,6*resolution,3*resolution,100,300);
+//                    context.closePath();
+//                }
+//                ladderImage1.onload=function(){
+//                    context.save();
+//                    context.beginPath();
+//                    context.rotate(Math.PI/11);
+//                    context.drawImage(ladderImage1,3*resolution+20,4*resolution+10,30,200);                              
+//                    context.closePath();
+//                    context.restore();
+//                }
+//
+//                ladderImage2.onload=function(){
+//                    context.save();
+//                    context.beginPath();
+//                    context.rotate(-Math.PI/11);
+//                    context.drawImage(ladderImage2,3*resolution-10,2*resolution,30,200);                
+//                    context.closePath();
+//                    context.restore();
+//                }
+//                ladderImage3.onload=function(){
+//                    context.beginPath();                
+//                    context.drawImage(ladderImage3,7*resolution+10,1*resolution-15,30,300);                
+//                    context.closePath();
+//                }
+//                ladderImage4.onload=function(){
+//                    context.beginPath();                
+//                    context.drawImage(ladderImage4,8*resolution+10,7*resolution-20,30,100);                
+//                    context.closePath();
+//                }
+            }
+            
+            //Player Javascript
+            function Player(color,playerNumber){
+                this.spot=0;
+                this.color=color;
+                this.playerNumber=playerNumber;
+                this.isActive=false;                
+                this.roll=function(){
+                    let r=Math.floor(Math.random()*6)+1;
+                    if(r===1){
+                        this.isActive=true;
+                    }
+                    if(this.isActive){
+                        this.spot+=r;
+                    }
+                    dice.showDice(r);
+                    
+                    //randomDice.push(r);
+                }
+                
+                this.show=function(){
+                    let currentTile=tiles[this.spot];                    
+                    let center=currentTile.getCenter();
+                    context.beginPath();
+                    context.fillStyle=this.color;
+                    context.arc(center[0],center[1],resolution/2-10,0,Math.PI*2);
+                    context.fill();
+                    context.closePath();
+                    if(currentTile.x==50 && currentTile.y ==400){
+                        this.spot=42;
+                        currentTile=tiles[this.spot];                    
+                        center=currentTile.getCenter();
+                        context.beginPath();
+                        context.fillStyle=this.color;
+                        context.arc(center[0],center[1],resolution/2-10,0,Math.PI*2);
+                        context.fill();
+                        context.closePath();
+                    }
+                    else if(currentTile.x==400 && currentTile.y==400){
+                        this.spot=31;
+                        currentTile=tiles[this.spot];                    
+                        center=currentTile.getCenter();
+                        context.beginPath();
+                        context.fillStyle=this.color;
+                        context.arc(center[0],center[1],resolution/2-10,0,Math.PI*2);
+                        context.fill();
+                        context.closePath();
+                    }
+                    else if(currentTile.x==350 && currentTile.y==300){
+                        this.spot=92;
+                        currentTile=tiles[this.spot];                    
+                        center=currentTile.getCenter();
+                        context.beginPath();
+                        context.fillStyle=this.color;
+                        context.arc(center[0],center[1],resolution/2-10,0,Math.PI*2);
+                        context.fill();
+                        context.closePath();
+                    }
+                    else if(currentTile.x==200 && currentTile.y==200){
+                        this.spot=83;
+                        currentTile=tiles[this.spot];                    
+                        center=currentTile.getCenter();
+                        context.beginPath();
+                        context.fillStyle=this.color;
+                        context.arc(center[0],center[1],resolution/2-10,0,Math.PI*2);
+                        context.fill();
+                        context.closePath();
+                    }
+                    //update player by snake
+                    else if(currentTile.x==50 && currentTile.y==250){
+                        this.spot=2;
+                        currentTile=tiles[this.spot];                    
+                        center=currentTile.getCenter();
+                        context.beginPath();
+                        context.fillStyle=this.color;
+                        context.arc(center[0],center[1],resolution/2-10,0,Math.PI*2);
+                        context.fill();
+                        context.closePath();
+                    }
+                    else if(currentTile.x==300 && currentTile.y==150){
+                        this.spot=13;
+                        currentTile=tiles[this.spot];                    
+                        center=currentTile.getCenter();
+                        context.beginPath();
+                        context.fillStyle=this.color;
+                        context.arc(center[0],center[1],resolution/2-10,0,Math.PI*2);
+                        context.fill();
+                        context.closePath();
+                    }
+                    else if(currentTile.x == 100 && currentTile.y==0){
+                        this.spot=45;
+                        currentTile=tiles[this.spot];                    
+                        center=currentTile.getCenter();
+                        context.beginPath();
+                        context.fillStyle=this.color;
+                        context.arc(center[0],center[1],resolution/2-10,0,Math.PI*2);
+                        context.fill();
+                        context.closePath();
+                    }
+                }
+            }
+            
+            
+            //Dice draw
+            function drawDice(){
+                this.x=50;
+                this.y=180;
+                
+                this.showDice=function(num){
+                    switch(num){
+                        case 1:
+                            context1.beginPath();
+                            context1.strokeStyle="#fff";
+                            context1.lineWidth=3;
+                            context1.rect(this.x,this.y,100,100);
+                            context1.stroke();
+                            context1.closePath();
+                            context1.beginPath();
+                            context1.fillStyle="#fff";
+                            context1.arc(this.x+50,this.y+50,10,0,Math.PI*2);
+                            context1.fill();                            
+                            context1.closePath();
+                            break;
+                        case 2:
+                            context1.beginPath();
+                            context1.strokeStyle="#fff";
+                            context1.lineWidth=3;
+                            context1.rect(this.x,this.y,100,100);
+                            context1.stroke();
+                            context1.closePath();
+                            context1.beginPath();
+                            context1.fillStyle="#fff";
+                            context1.arc(this.x+30,this.y+50,10,0,Math.PI*2);
+                            context1.arc(this.x+70,this.y+50,10,0,Math.PI*2);
+                            context1.fill();                            
+                            context1.closePath();
+                            break;
+                        case 3:
+                            context1.beginPath();
+                            context1.strokeStyle="#fff";
+                            context1.lineWidth=3;
+                            context1.rect(this.x,this.y,100,100);
+                            context1.stroke();
+                            context1.closePath();
+                            context1.beginPath();
+                            context1.fillStyle="#fff";
+                            context1.arc(this.x+20,this.y+20,10,0,Math.PI*2);
+                            context1.arc(this.x+50,this.y+50,10,0,Math.PI*2);
+                            context1.arc(this.x+80,this.y+80,10,0,Math.PI*2);
+                            context1.fill();                          
+                            context1.closePath();
+                            break;
+                        case 4:
+                            context1.beginPath();
+                            context1.strokeStyle="#fff";
+                            context1.lineWidth=3;
+                            context1.rect(this.x,this.y,100,100);
+                            context1.stroke();
+                            context1.closePath();
+                            context1.beginPath();
+                            context1.fillStyle="#fff";
+                            context1.arc(this.x+20,this.y+20,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();
+                            //context1.beginPath();
+                            context1.arc(this.x+80,this.y+20,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();
+                            //context1.beginPath();
+                            context1.arc(this.x+20,this.y+80,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();
+                            context1.arc(this.x+80,this.y+80,10,0,Math.PI*2);
+                            context1.fill();                          
+                            context1.closePath();
+                            break;
+                        case 5:
+                            context1.beginPath();
+                            context1.strokeStyle="#fff";
+                            context1.lineWidth=3;
+                            context1.rect(this.x,this.y,100,100);
+                            context1.stroke();
+                            context1.closePath();
+                            context1.beginPath();
+                            context1.fillStyle="#fff";
+                            context1.arc(this.x+20,this.y+20,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();                            
+                            context1.arc(this.x+80,this.y+20,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();                            
+                            context1.arc(this.x+20,this.y+80,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();
+                            context1.arc(this.x+80,this.y+80,10,0,Math.PI*2);
+                            context1.fill();                          
+                            context1.closePath();
+                            context1.arc(this.x+50,this.y+50,10,0,Math.PI*2);
+                            context1.fill();                          
+                            context1.closePath();
+                            break;
+                        default:
+                            context1.beginPath();
+                            context1.strokeStyle="#fff";
+                            context1.lineWidth=3;
+                            context1.rect(this.x,this.y,100,100);
+                            context1.stroke();
+                            context1.closePath();
+                            context1.beginPath();
+                            context1.fillStyle="#fff";
+                            context1.arc(this.x+20,this.y+30,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();                           
+                            context1.arc(this.x+50,this.y+30,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();                            
+                            context1.arc(this.x+80,this.y+30,10,0,Math.PI*2);
+                            context1.fill();
+                            context1.closePath();
+                            context1.arc(this.x+20,this.y+70,10,0,Math.PI*2);
+                            context1.fill();                          
+                            context1.closePath();
+                            context1.arc(this.x+50,this.y+70,10,0,Math.PI*2);
+                            context1.fill();                          
+                            context1.closePath();
+                            context1.arc(this.x+80,this.y+70,10,0,Math.PI*2);
+                            context1.fill();                          
+                            context1.closePath();
+                            break;
+                    }
+                }
+            }
+            
+            //Tile Javascript
+            function Tile(x,y,resolution,index,next){
+                let colorValue=Math.random()*255;
+                this.x=x;
+                this.y=y;
+                this.wh=resolution;
+                this.index=index;
+                this.next=next;
+                if(this.index % 4==0){
+                    this.color='#FF6666';//'rgb('+colorValue+',0,0)';
+                }else if(this.index % 4==1){
+                    this.color='#003366';//'rgb(0,'+colorValue+ '0,0)';
+                }else if(this.index %4 ==2){
+                    this.color='#CCCC00';
+                }else{
+                    this.color='#006600';
+                }
+                
+                
+                this.show=function(){
+                    context.beginPath();
+                    context.fillStyle=this.color;
+                    context.fillRect(this.x,this.y,this.wh,this.wh);
+                    context.closePath();
+                }
+                this.getCenter=function(){
+                    let cx=this.x+this.wh/2;
+                    let cy=this.y+this.wh/2;
+                    return [cx,cy];
+                }
+                this.showNumbers=function(){
+                    context.beginPath();
+                    context.font = "13px Arial";
+                    context.fillStyle="#fff";
+                    context.fillText(this.index+1, this.x+resolution/3-9, this.y+resolution/3-5);
+                    context.closePath();
+                }
+                this.showLocation=function(){
+                    console.log('Tile :'+(this.index+1)+'- X:'+this.x+', Y:'+this.y);
+                }
+            }
+            
+        </script>
+    </body>
+</html>
