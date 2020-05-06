@@ -1,0 +1,29 @@
+<!doctype html>
+<html>    
+    <head>
+        <title>Ball Breakout</title>
+        <style>
+            .container{
+                display: flex;
+                justify-content: center;
+            }
+            #canvas{                
+                background-color:#123456;                
+            }
+        </style>
+    </head>
+     <body>
+        <div class="container">
+            <canvas id="canvas"></canvas>
+            <div>
+                <h3>Level:<span id="gamelevel"></span></h3>
+                <h4>Life Remaining: <span id="liferemaining"></span></h4>
+                <input type="button" value="Next Level" onclick="nextlevel();">
+                <div>
+                    <h3 id="gameover"></h3>
+                </div>
+            </div>
+        </div>  
+         <script type="text/javascript" src="breakout.js"></script>
+     </body>
+</html>
