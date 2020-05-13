@@ -8,7 +8,7 @@ canvas.height=HEIGHT;
 //Variable
 var blockArr=[],
     blockIndex=0,
-    numBlockCol=7,
+    numBlockCol=11,
     numBlockRow=4,
     colWidth=WIDTH/numBlockCol,
     padding=colWidth/4,
@@ -116,8 +116,7 @@ function Block(x, y, width, height,isShow){
 }
 
 //Display Block function
-function displayBlock(){
-    
+function displayBlock(){    
     blockArr.forEach((b)=>{
         if(isBallhitsBlock(ball,b) && b.isShow){
             ball.yDirSpeed=-ball.yDirSpeed;
@@ -245,8 +244,7 @@ function drawGame(){
 
 //update game function
 function updateGame(){
-    ball.updateBall(player);
-    
+    ball.updateBall(player);    
     if(isLeft){
         player.updatePlayer(-4);
     }else if(isRight){
